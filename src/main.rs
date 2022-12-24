@@ -7,6 +7,10 @@ fn main() {
 }
 
 fn sudoku(puzzle: &mut [[u8; 9]; 9]) {
+    // implement backtracking algo
+
+    // find empty space from top -> bot, left -> right
+    //
     todo!()
 }
 
