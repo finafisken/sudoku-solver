@@ -1,5 +1,7 @@
+use crate::{Area_3x3, Column, Row};
+
 // rows are valid if unique numbers from 1-9 or empty spaces (0)
-pub fn is_row_valid(row: &[u8; 9]) -> bool {
+pub fn is_row_valid(row: &Row) -> bool {
     for (i, x) in row.iter().enumerate() {
         if x != &0_u8 && row[(i + 1)..row.len()].contains(x) {
             return false;
@@ -10,7 +12,7 @@ pub fn is_row_valid(row: &[u8; 9]) -> bool {
 }
 
 // cols are valid if unique numbers from 1-9 or empty spaces (0)
-pub fn is_col_valid(col: &[[u8; 1]; 9]) -> bool {
+pub fn is_col_valid(col: &Column) -> bool {
     for (i, y) in col.iter().enumerate() {
         if y != &[0_u8] && col[(i + 1)..col.len()].contains(y) {
             return false;
@@ -21,7 +23,7 @@ pub fn is_col_valid(col: &[[u8; 1]; 9]) -> bool {
 }
 
 // 3x3s are valid if unique numbers from 1-9 or empty spaces (0)
-pub fn is_3x3_valid(area: &[[u8; 3]; 3]) -> bool {
+pub fn is_3x3_valid(area: &Area_3x3) -> bool {
     let mut seen = Vec::new();
     for y in area {
         for x in y {

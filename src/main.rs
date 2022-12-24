@@ -2,15 +2,68 @@ mod validation;
 
 use validation::{is_3x3_valid, is_col_valid, is_row_valid};
 
+type Coord = (u8, u8);
+type Grid = [[u8; 9]; 9];
+type Row = [u8; 9];
+type Column = [[u8; 1]; 9];
+type Area_3x3 = [[u8; 3]; 3];
+
 fn main() {
-    assert!(is_row_valid(&[6, 1, 5, 7, 2, 4, 8, 2, 9]));
+    // assert!(is_row_valid(&[6, 1, 5, 7, 2, 4, 8, 2, 9]));
+    let mut puzzle = [
+        [6, 0, 5, 7, 2, 0, 0, 3, 9],
+        [4, 0, 0, 0, 0, 5, 1, 0, 0],
+        [0, 2, 0, 1, 0, 0, 0, 0, 4],
+        [0, 9, 0, 0, 3, 0, 7, 0, 6],
+        [1, 0, 0, 8, 0, 9, 0, 0, 5],
+        [2, 0, 4, 0, 5, 0, 0, 8, 0],
+        [8, 0, 0, 0, 0, 3, 0, 2, 0],
+        [0, 0, 2, 9, 0, 0, 0, 0, 1],
+        [3, 5, 0, 0, 6, 7, 4, 0, 8],
+    ];
+    sudoku(&mut puzzle);
 }
 
-fn sudoku(puzzle: &mut [[u8; 9]; 9]) {
+fn sudoku(puzzle: &mut Grid) {
     // implement backtracking algo
 
-    // find empty space from top -> bot, left -> right
-    //
+    // 1. find empty space from top -> bot, left -> right
+    // 2. insert candidate number
+    // 3. validate puzzle, if ok go step one, if bad backtrack step two and increment candidate
+    // once no empty spaces puzzle should be solved
+
+    let mut to_fill: Vec<Coord> = Vec::new();
+
+    for (y, row) in puzzle.iter().enumerate() {
+        for (x, val) in row.iter().enumerate() {
+            // println!("({}, {}): {}", x, y, val);
+            if val == &0_u8 {
+                to_fill.push((x as u8, y as u8));
+            }
+        }
+    }
+
+    // reverse order for easy pop/push working from top left
+    to_fill.reverse();
+
+    while !to_fill.is_empty() {
+        let location = to_fill.pop();
+
+        let mut candidate = 1;
+
+        // println!("{:?}", to_fill);
+    }
+}
+
+fn get_row_from_coord(loc: Coord, grid: Grid) -> Row {
+    todo!()
+}
+
+fn get_col_from_coord(loc: Coord, grid: Grid) -> Column {
+    todo!()
+}
+
+fn get_3x3_from_coord(loc: Coord, grid: Grid) -> Area_3x3 {
     todo!()
 }
 
