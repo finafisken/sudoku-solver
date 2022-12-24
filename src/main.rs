@@ -1,75 +1,13 @@
+mod validation;
+
+use validation::{is_3x3_valid, is_col_valid, is_row_valid};
+
 fn main() {
-    println!("Hello, world!");
+    assert!(is_row_valid(&[6, 1, 5, 7, 2, 4, 8, 2, 9]));
 }
 
 fn sudoku(puzzle: &mut [[u8; 9]; 9]) {
     todo!()
-}
-
-fn check_row(row: &[u8; 9]) -> bool {
-    // let mut seen = Vec::new();
-    // for x in row {
-    //     if seen.contains(x) {
-    //         return false;
-    //     }
-    //     seen.push(x.to_owned());
-    // }
-
-    for (i, x) in row.iter().enumerate() {
-        if row[(i + 1)..row.len()].contains(x) {
-            return false;
-        }
-    }
-
-    true
-}
-
-fn check_col(col: &[[u8; 1]; 9]) -> bool {
-    // let mut seen = Vec::new();
-    // for [y] in col {
-    //     if seen.contains(y) {
-    //         return false;
-    //     }
-    //     seen.push(y.to_owned());
-    // }
-
-    for (i, y) in col.iter().enumerate() {
-        if col[(i + 1)..col.len()].contains(y) {
-            return false;
-        }
-    }
-
-    true
-}
-
-#[test]
-fn test_check_row() {
-    let valid_row1 = [6, 1, 5, 7, 2, 4, 8, 3, 9];
-    let valid_row2 = [2, 7, 4, 6, 5, 1, 9, 8, 3];
-    let invalid_row1 = [2, 7, 1, 6, 5, 1, 9, 8, 3];
-    let invalid_row2 = [6, 1, 5, 7, 2, 4, 8, 9, 9];
-    let invalid_row3 = [1, 1, 1, 6, 5, 4, 9, 8, 3];
-
-    assert!(check_row(&valid_row1));
-    assert!(check_row(&valid_row2));
-    assert!(!check_row(&invalid_row1));
-    assert!(!check_row(&invalid_row2));
-    assert!(!check_row(&invalid_row3));
-}
-
-#[test]
-fn test_check_col() {
-    let valid_col1 = [[6], [4], [9], [5], [1], [2], [8], [7], [3]];
-    let valid_col2 = [[9], [3], [4], [8], [5], [2], [1], [7], [6]];
-    let invalid_col1 = [[6], [4], [9], [5], [1], [3], [8], [7], [3]];
-    let invalid_col2 = [[1], [1], [4], [8], [5], [2], [1], [7], [6]];
-    let invalid_col3 = [[9], [3], [4], [8], [5], [2], [1], [7], [9]];
-
-    assert!(check_col(&valid_col1));
-    assert!(check_col(&valid_col2));
-    assert!(!check_col(&invalid_col1));
-    assert!(!check_col(&invalid_col2));
-    assert!(!check_col(&invalid_col3));
 }
 
 // #[test]
