@@ -1,4 +1,4 @@
-use crate::{Area_3x3, Column, Row};
+use crate::{Area3x3, Column, Row};
 
 // rows are valid if unique numbers from 1-9 or empty spaces (0)
 pub fn is_row_valid(row: &Row) -> bool {
@@ -23,7 +23,7 @@ pub fn is_col_valid(col: &Column) -> bool {
 }
 
 // 3x3s are valid if unique numbers from 1-9 or empty spaces (0)
-pub fn is_3x3_valid(area: &Area_3x3) -> bool {
+pub fn is_3x3_valid(area: &Area3x3) -> bool {
     let mut seen = Vec::new();
     for y in area {
         for x in y {

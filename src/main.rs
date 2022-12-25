@@ -1,15 +1,16 @@
+mod location;
 mod validation;
 
+use location::{get_3x3_from_coord, get_col_from_coord, get_row_from_coord};
 use validation::{is_3x3_valid, is_col_valid, is_row_valid};
 
 type Coord = (u8, u8);
 type Grid = [[u8; 9]; 9];
 type Row = [u8; 9];
 type Column = [[u8; 1]; 9];
-type Area_3x3 = [[u8; 3]; 3];
+type Area3x3 = [[u8; 3]; 3];
 
 fn main() {
-    // assert!(is_row_valid(&[6, 1, 5, 7, 2, 4, 8, 2, 9]));
     let mut puzzle = [
         [6, 0, 5, 7, 2, 0, 0, 3, 9],
         [4, 0, 0, 0, 0, 5, 1, 0, 0],
@@ -46,25 +47,27 @@ fn sudoku(puzzle: &mut Grid) {
     // reverse order for easy pop/push working from top left
     to_fill.reverse();
 
-    while !to_fill.is_empty() {
-        let location = to_fill.pop();
+    let puzzle = [
+        [6, 1, 5, 7, 2, 4, 8, 3, 9],
+        [4, 8, 7, 3, 9, 5, 1, 6, 2],
+        [9, 2, 3, 1, 8, 6, 5, 7, 4],
+        [5, 9, 8, 4, 3, 2, 7, 1, 6],
+        [1, 3, 6, 8, 7, 9, 2, 4, 5],
+        [2, 7, 4, 6, 5, 1, 9, 8, 3],
+        [8, 4, 9, 5, 1, 3, 6, 2, 7],
+        [7, 6, 2, 9, 4, 8, 3, 5, 1],
+        [3, 5, 1, 2, 6, 7, 4, 9, 8],
+    ];
 
-        let mut candidate = 1;
+    get_3x3_from_coord((7, 2), puzzle.clone());
 
-        // println!("{:?}", to_fill);
-    }
-}
+    // while !to_fill.is_empty() {
+    //     let location = to_fill.pop();
 
-fn get_row_from_coord(loc: Coord, grid: Grid) -> Row {
-    todo!()
-}
+    //     let mut candidate = 1;
 
-fn get_col_from_coord(loc: Coord, grid: Grid) -> Column {
-    todo!()
-}
-
-fn get_3x3_from_coord(loc: Coord, grid: Grid) -> Area_3x3 {
-    todo!()
+    //     // println!("{:?}", to_fill);
+    // }
 }
 
 // #[test]
