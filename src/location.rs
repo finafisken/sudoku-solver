@@ -26,12 +26,9 @@ pub fn get_3x3_from_coord(loc: Coord, grid: Grid) -> Area3x3 {
 
     for (y, row) in grid[y_range].iter().enumerate() {
         for (x, val) in row[x_range.to_owned()].iter().enumerate() {
-            println!("{}", val);
             area[y][x] = *val;
         }
     }
-
-    println!("{:?}", area);
 
     area
 }
