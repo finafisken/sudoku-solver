@@ -27,8 +27,6 @@ fn main() {
 }
 
 fn sudoku(puzzle: &mut Grid) {
-    // implement backtracking algo
-
     // 1. find empty space from top -> bot, left -> right
     // 2. insert candidate number
     // 3. validate puzzle, if ok go step one, if bad backtrack step two and increment candidate
@@ -39,7 +37,6 @@ fn sudoku(puzzle: &mut Grid) {
 
     for (y, row) in puzzle.iter().enumerate() {
         for (x, val) in row.iter().enumerate() {
-            // println!("({}, {}): {}", x, y, val);
             if val == &0_u8 {
                 to_fill.push((x as u8, y as u8));
             }
@@ -54,24 +51,18 @@ fn sudoku(puzzle: &mut Grid) {
 
         let val = puzzle[y as usize][x as usize];
 
+        let candidate = val + 1;
+
         // need to backtrack to previous insertion, current solution path no longer viable
-        if val == 9 {
-            println!("to_fill: {:?}", to_fill);
-            println!("filled: {:?}", filled);
-            println!("{:?}", puzzle);
+        if candidate == 10 {
+            let (prev_x, prev_y) = filled.pop().expect("No positions to backtrack to");
 
             puzzle[y as usize][x as usize] = 0;
-            let (x, y) = filled.pop().expect("No positions to backtrack to");
+
             to_fill.push((x, y));
+            to_fill.push((prev_x, prev_y));
+
             continue;
-        }
-
-        // TODO: we can just always increment
-        let mut candidate = 1;
-
-        // when backtracking pick up previous candidate val
-        if val != 0 && val < 9 {
-            candidate = val + 1;
         }
 
         // insert candidate
@@ -87,46 +78,23 @@ fn sudoku(puzzle: &mut Grid) {
         if is_valid {
             filled.push((x, y));
         } else {
-            // if val == 9 {
-            //     puzzle[y as usize][x as usize] = 0;
-            //     let (x, y) = filled.pop().expect("No positions to backtrack to");
-            //     to_fill.push((x, y));
-            // } else {
-            //     to_fill.push((x, y));
-            // }
             to_fill.push((x, y));
         }
-
-        // println!("processing: {:?}", (x, y));
-        // println!("to_fill: {:?}", to_fill.len());
-        // println!("filled: {:?}", filled.len());
     }
 }
 
 #[test]
 fn puzzle1() {
-    // let mut puzzle = [
-    //     [6, 0, 5, 7, 2, 0, 0, 3, 9],
-    //     [4, 0, 0, 0, 0, 5, 1, 0, 0],
-    //     [0, 2, 0, 1, 0, 0, 0, 0, 4],
-    //     [0, 9, 0, 0, 3, 0, 7, 0, 6],
-    //     [1, 0, 0, 8, 0, 9, 0, 0, 5],
-    //     [2, 0, 4, 0, 5, 0, 0, 8, 0],
-    //     [8, 0, 0, 0, 0, 3, 0, 2, 0],
-    //     [0, 0, 2, 9, 0, 0, 0, 0, 1],
-    //     [3, 5, 0, 0, 6, 7, 4, 0, 8],
-    // ];
-
     let mut puzzle = [
-        [6, 1, 5, 7, 2, 4, 8, 3, 9],
+        [6, 0, 5, 7, 2, 0, 0, 3, 9],
         [4, 0, 0, 0, 0, 5, 1, 0, 0],
         [0, 2, 0, 1, 0, 0, 0, 0, 4],
-        [5, 9, 8, 4, 3, 2, 7, 1, 6],
-        [1, 3, 6, 8, 7, 9, 2, 4, 5],
-        [2, 7, 4, 6, 5, 1, 9, 8, 3],
-        [8, 4, 9, 5, 1, 3, 6, 2, 7],
-        [7, 6, 2, 9, 4, 8, 3, 5, 1],
-        [3, 5, 1, 2, 6, 7, 4, 9, 8],
+        [0, 9, 0, 0, 3, 0, 7, 0, 6],
+        [1, 0, 0, 8, 0, 9, 0, 0, 5],
+        [2, 0, 4, 0, 5, 0, 0, 8, 0],
+        [8, 0, 0, 0, 0, 3, 0, 2, 0],
+        [0, 0, 2, 9, 0, 0, 0, 0, 1],
+        [3, 5, 0, 0, 6, 7, 4, 0, 8],
     ];
 
     let solution = [
@@ -145,65 +113,62 @@ fn puzzle1() {
     assert_eq!(puzzle, solution);
 }
 
-// #[test]
-// fn puzzle2() {
-//     let mut puzzle = [
-//         [0, 0, 8, 0, 3, 0, 5, 4, 0],
-//         [3, 0, 0, 4, 0, 7, 9, 0, 0],
-//         [4, 1, 0, 0, 0, 8, 0, 0, 2],
-//         [0, 4, 3, 5, 0, 2, 0, 6, 0],
-//         [5, 0, 0, 0, 0, 0, 0, 0, 8],
-//         [0, 6, 0, 3, 0, 9, 4, 1, 0],
-//         [1, 0, 0, 8, 0, 0, 0, 2, 7],
-//         [0, 0, 5, 6, 0, 3, 0, 0, 4],
-//         [0, 2, 9, 0, 7, 0, 8, 0, 0],
-//     ];
-//     let solution = [
-//         [9, 7, 8, 2, 3, 1, 5, 4, 6],
-//         [3, 5, 2, 4, 6, 7, 9, 8, 1],
-//         [4, 1, 6, 9, 5, 8, 3, 7, 2],
-//         [8, 4, 3, 5, 1, 2, 7, 6, 9],
-//         [5, 9, 1, 7, 4, 6, 2, 3, 8],
-//         [2, 6, 7, 3, 8, 9, 4, 1, 5],
-//         [1, 3, 4, 8, 9, 5, 6, 2, 7],
-//         [7, 8, 5, 6, 2, 3, 1, 9, 4],
-//         [6, 2, 9, 1, 7, 4, 8, 5, 3],
-//     ];
+#[test]
+fn puzzle2() {
+    let mut puzzle = [
+        [0, 0, 8, 0, 3, 0, 5, 4, 0],
+        [3, 0, 0, 4, 0, 7, 9, 0, 0],
+        [4, 1, 0, 0, 0, 8, 0, 0, 2],
+        [0, 4, 3, 5, 0, 2, 0, 6, 0],
+        [5, 0, 0, 0, 0, 0, 0, 0, 8],
+        [0, 6, 0, 3, 0, 9, 4, 1, 0],
+        [1, 0, 0, 8, 0, 0, 0, 2, 7],
+        [0, 0, 5, 6, 0, 3, 0, 0, 4],
+        [0, 2, 9, 0, 7, 0, 8, 0, 0],
+    ];
+    let solution = [
+        [9, 7, 8, 2, 3, 1, 5, 4, 6],
+        [3, 5, 2, 4, 6, 7, 9, 8, 1],
+        [4, 1, 6, 9, 5, 8, 3, 7, 2],
+        [8, 4, 3, 5, 1, 2, 7, 6, 9],
+        [5, 9, 1, 7, 4, 6, 2, 3, 8],
+        [2, 6, 7, 3, 8, 9, 4, 1, 5],
+        [1, 3, 4, 8, 9, 5, 6, 2, 7],
+        [7, 8, 5, 6, 2, 3, 1, 9, 4],
+        [6, 2, 9, 1, 7, 4, 8, 5, 3],
+    ];
 
-//     sudoku(&mut puzzle);
-//     assert_eq!(
-//         puzzle, solution
-//     );
-// }
-// #[test]
-// fn puzzle3() {
-//     let mut puzzle = [
-//         [5, 3, 0, 0, 7, 0, 0, 0, 0],
-//         [6, 0, 0, 1, 9, 5, 0, 0, 0],
-//         [0, 9, 8, 0, 0, 0, 0, 6, 0],
-//         [8, 0, 0, 0, 6, 0, 0, 0, 3],
-//         [4, 0, 0, 8, 0, 3, 0, 0, 1],
-//         [7, 0, 0, 0, 2, 0, 0, 0, 6],
-//         [0, 6, 0, 0, 0, 0, 2, 8, 0],
-//         [0, 0, 0, 4, 1, 9, 0, 0, 5],
-//         [0, 0, 0, 0, 8, 0, 0, 7, 9],
-//     ];
+    sudoku(&mut puzzle);
+    assert_eq!(puzzle, solution);
+}
 
-//     let solution = [
-//         [5, 3, 4, 6, 7, 8, 9, 1, 2],
-//         [6, 7, 2, 1, 9, 5, 3, 4, 8],
-//         [1, 9, 8, 3, 4, 2, 5, 6, 7],
-//         [8, 5, 9, 7, 6, 1, 4, 2, 3],
-//         [4, 2, 6, 8, 5, 3, 7, 9, 1],
-//         [7, 1, 3, 9, 2, 4, 8, 5, 6],
-//         [9, 6, 1, 5, 3, 7, 2, 8, 4],
-//         [2, 8, 7, 4, 1, 9, 6, 3, 5],
-//         [3, 4, 5, 2, 8, 6, 1, 7, 9],
-//     ];
+#[test]
+fn puzzle3() {
+    let mut puzzle = [
+        [5, 3, 0, 0, 7, 0, 0, 0, 0],
+        [6, 0, 0, 1, 9, 5, 0, 0, 0],
+        [0, 9, 8, 0, 0, 0, 0, 6, 0],
+        [8, 0, 0, 0, 6, 0, 0, 0, 3],
+        [4, 0, 0, 8, 0, 3, 0, 0, 1],
+        [7, 0, 0, 0, 2, 0, 0, 0, 6],
+        [0, 6, 0, 0, 0, 0, 2, 8, 0],
+        [0, 0, 0, 4, 1, 9, 0, 0, 5],
+        [0, 0, 0, 0, 8, 0, 0, 7, 9],
+    ];
 
-//     sudoku(&mut puzzle);
+    let solution = [
+        [5, 3, 4, 6, 7, 8, 9, 1, 2],
+        [6, 7, 2, 1, 9, 5, 3, 4, 8],
+        [1, 9, 8, 3, 4, 2, 5, 6, 7],
+        [8, 5, 9, 7, 6, 1, 4, 2, 3],
+        [4, 2, 6, 8, 5, 3, 7, 9, 1],
+        [7, 1, 3, 9, 2, 4, 8, 5, 6],
+        [9, 6, 1, 5, 3, 7, 2, 8, 4],
+        [2, 8, 7, 4, 1, 9, 6, 3, 5],
+        [3, 4, 5, 2, 8, 6, 1, 7, 9],
+    ];
 
-//     assert_eq!(
-//         puzzle, solution
-//     );
-// }
+    sudoku(&mut puzzle);
+
+    assert_eq!(puzzle, solution);
+}
