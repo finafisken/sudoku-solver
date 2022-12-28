@@ -48,9 +48,7 @@ fn sudoku(puzzle: &mut Grid) {
 
     while !to_fill.is_empty() {
         let (x, y) = to_fill.pop().expect("Got empty Option from to_fill");
-
         let val = puzzle[y][x];
-
         let candidate = val + 1;
 
         // need to backtrack to previous insertion, current solution path no longer viable
