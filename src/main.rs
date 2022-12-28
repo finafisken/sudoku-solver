@@ -4,7 +4,7 @@ mod validation;
 use location::{get_3x3_from_coord, get_col_from_coord, get_row_from_coord};
 use validation::{is_3x3_valid, is_col_valid, is_row_valid};
 
-type Coord = (u8, u8);
+type Coord = (usize, usize);
 type Grid = [[u8; 9]; 9];
 type Row = [u8; 9];
 type Column = [[u8; 1]; 9];
@@ -38,7 +38,7 @@ fn sudoku(puzzle: &mut Grid) {
     for (y, row) in puzzle.iter().enumerate() {
         for (x, val) in row.iter().enumerate() {
             if val == &0_u8 {
-                to_fill.push((x as u8, y as u8));
+                to_fill.push((x, y));
             }
         }
     }
@@ -49,7 +49,7 @@ fn sudoku(puzzle: &mut Grid) {
     while !to_fill.is_empty() {
         let (x, y) = to_fill.pop().expect("Got empty Option from to_fill");
 
-        let val = puzzle[y as usize][x as usize];
+        let val = puzzle[y][x];
 
         let candidate = val + 1;
 
@@ -57,7 +57,7 @@ fn sudoku(puzzle: &mut Grid) {
         if candidate == 10 {
             let (prev_x, prev_y) = filled.pop().expect("No positions to backtrack to");
 
-            puzzle[y as usize][x as usize] = 0;
+            puzzle[y][x] = 0;
 
             to_fill.push((x, y));
             to_fill.push((prev_x, prev_y));
@@ -66,7 +66,7 @@ fn sudoku(puzzle: &mut Grid) {
         }
 
         // insert candidate
-        puzzle[y as usize][x as usize] = candidate;
+        puzzle[y][x] = candidate;
 
         // validate
         let row = get_row_from_coord((x, y), *puzzle);
