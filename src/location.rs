@@ -1,11 +1,11 @@
 use crate::{Area3x3, Column, Coord, Grid, Row};
 
-pub fn get_row_from_coord(loc: Coord, grid: Grid) -> Row {
-    grid[loc.1]
+pub fn get_row_from_coord((_, y): Coord, grid: Grid) -> Row {
+    grid[y]
 }
 
-pub fn get_col_from_coord(loc: Coord, grid: Grid) -> Column {
-    grid.map(|row| [row[loc.0]])
+pub fn get_col_from_coord((x, _): Coord, grid: Grid) -> Column {
+    grid.map(|row| [row[x]])
 }
 
 pub fn get_3x3_from_coord(loc: Coord, grid: Grid) -> Area3x3 {
