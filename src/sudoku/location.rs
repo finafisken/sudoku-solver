@@ -1,4 +1,4 @@
-use crate::{Area3x3, Column, Coord, Grid, Row};
+use super::game::{Area3x3, Column, Coord, Grid, Row};
 
 pub fn get_row_from_coord((_, y): Coord, grid: Grid) -> Row {
     grid[y]

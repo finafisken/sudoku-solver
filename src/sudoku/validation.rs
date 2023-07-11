@@ -1,4 +1,4 @@
-use crate::{Area3x3, Column, Row};
+use super::game::{Area3x3, Column, Row};
 
 // rows are valid if unique numbers from 1-9 or empty spaces (0)
 pub fn is_row_valid(row: &Row) -> bool {
