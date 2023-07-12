@@ -1,6 +1,22 @@
 mod sudoku;
 
-fn main() {
+use axum::{
+    routing::get,
+    Router,
+    Server
+};
+
+#[tokio::main]
+async fn main() {
+    let app = Router::new().route("/", get(solve_sudoku));
+
+    Server::bind(&"0.0.0.0:3000".parse().unwrap())
+        .serve(app.into_make_service())
+        .await
+        .unwrap();
+}
+
+async fn solve_sudoku() -> String {
     let mut puzzle = [
         [6, 0, 5, 7, 2, 0, 0, 3, 9],
         [4, 0, 0, 0, 0, 5, 1, 0, 0],
@@ -13,5 +29,7 @@ fn main() {
         [3, 5, 0, 0, 6, 7, 4, 0, 8],
     ];
 
-    sudoku::game::solve(&mut puzzle);
+    let solution = sudoku::game::solve(&mut puzzle);
+
+    format!("{solution:?}")
 }

@@ -7,7 +7,7 @@ pub type Row = [u8; 9];
 pub type Column = [[u8; 1]; 9];
 pub type Area3x3 = [[u8; 3]; 3];
 
-pub fn solve(puzzle: &mut Grid) {
+pub fn solve(puzzle: &mut Grid) -> Grid {
     // 1. find empty space from top -> bot, left -> right
     // 2. insert candidate number
     // 3. validate puzzle, if ok go step one, if bad backtrack step two and increment candidate
@@ -60,6 +60,8 @@ pub fn solve(puzzle: &mut Grid) {
             to_fill.push((x, y));
         }
     }
+    
+    *puzzle
 }
 
 #[test]
