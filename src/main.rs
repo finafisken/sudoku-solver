@@ -42,7 +42,7 @@ async fn solve_and_broadcast(mut ws: ws::WebSocket) {
             return;
         };
 
-        let mut p = puzzle.grid;
+        let Puzzle(mut p) = puzzle;
 
         let solution = sudoku::game::solve(&mut p, Some(ws)).await;
 

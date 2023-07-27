@@ -12,9 +12,7 @@ pub type Column = [[u8; 1]; 9];
 pub type Area3x3 = [[u8; 3]; 3];
 
 #[derive(Deserialize)]
-pub struct Puzzle {
-    pub grid: Grid
-}
+pub struct Puzzle(pub Grid);
 
 pub async fn solve(puzzle: &mut Grid, mut maybe_ws: Option<ws::WebSocket>) -> Grid {
     // 1. find empty space from top -> bot, left -> right
