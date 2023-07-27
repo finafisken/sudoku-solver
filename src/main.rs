@@ -3,12 +3,15 @@ mod sudoku;
 use axum::{
     routing::get,
     Router,
-    Server
+    Server,
+    extract::{WebSocketUpgrade, ws},
+    response::IntoResponse
 };
 
 #[tokio::main]
 async fn main() {
-    let app = Router::new().route("/", get(solve_sudoku));
+    let app = Router::new()
+        .route("/live", get(live_solve));
 
     Server::bind(&"0.0.0.0:3000".parse().unwrap())
         .serve(app.into_make_service())
@@ -16,7 +19,11 @@ async fn main() {
         .unwrap();
 }
 
-async fn solve_sudoku() -> String {
+async fn live_solve(ws: WebSocketUpgrade) -> impl IntoResponse {
+    ws.on_upgrade(solve_and_broadcast)
+}
+
+async fn solve_and_broadcast(ws: ws::WebSocket) {
     let mut puzzle = [
         [6, 0, 5, 7, 2, 0, 0, 3, 9],
         [4, 0, 0, 0, 0, 5, 1, 0, 0],
@@ -29,7 +36,7 @@ async fn solve_sudoku() -> String {
         [3, 5, 0, 0, 6, 7, 4, 0, 8],
     ];
 
-    let solution = sudoku::game::solve(&mut puzzle);
+    let solution = sudoku::game::solve(&mut puzzle, Some(ws)).await;
 
-    format!("{solution:?}")
+    println!("{solution:?}");
 }

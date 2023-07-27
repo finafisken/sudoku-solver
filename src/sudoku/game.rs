@@ -1,3 +1,6 @@
+use axum::extract::ws;
+use tokio::time::{sleep, Duration};
+
 use super::location::{get_3x3_from_coord, get_col_from_coord, get_row_from_coord};
 use super::validation::{is_3x3_valid, is_col_valid, is_row_valid};
 
@@ -7,7 +10,7 @@ pub type Row = [u8; 9];
 pub type Column = [[u8; 1]; 9];
 pub type Area3x3 = [[u8; 3]; 3];
 
-pub fn solve(puzzle: &mut Grid) -> Grid {
+pub async fn solve(puzzle: &mut Grid, mut maybe_ws: Option<ws::WebSocket>) -> Grid {
     // 1. find empty space from top -> bot, left -> right
     // 2. insert candidate number
     // 3. validate puzzle, if ok go step one, if bad backtrack step two and increment candidate
@@ -54,18 +57,23 @@ pub fn solve(puzzle: &mut Grid) -> Grid {
 
         let is_valid = is_3x3_valid(&area) && is_col_valid(&col) && is_row_valid(&row);
 
+        if let Some(ref mut ws) = maybe_ws {
+            sleep(Duration::from_millis(10)).await;
+            ws.send(ws::Message::Text(format!("x: {x}, y: {y} => {candidate}"))).await;
+        }
+
         if is_valid {
             filled.push((x, y));
         } else {
             to_fill.push((x, y));
         }
     }
-    
+
     *puzzle
 }
 
-#[test]
-fn puzzle1() {
+#[tokio::test]
+async fn puzzle1() {
     let mut puzzle = [
         [6, 0, 5, 7, 2, 0, 0, 3, 9],
         [4, 0, 0, 0, 0, 5, 1, 0, 0],
@@ -90,12 +98,12 @@ fn puzzle1() {
         [3, 5, 1, 2, 6, 7, 4, 9, 8],
     ];
 
-    solve(&mut puzzle);
+    solve(&mut puzzle, None).await;
     assert_eq!(puzzle, solution);
 }
 
-#[test]
-fn puzzle2() {
+#[tokio::test]
+async fn puzzle2() {
     let mut puzzle = [
         [0, 0, 8, 0, 3, 0, 5, 4, 0],
         [3, 0, 0, 4, 0, 7, 9, 0, 0],
@@ -119,12 +127,12 @@ fn puzzle2() {
         [6, 2, 9, 1, 7, 4, 8, 5, 3],
     ];
 
-    solve(&mut puzzle);
+    solve(&mut puzzle, None).await;
     assert_eq!(puzzle, solution);
 }
 
-#[test]
-fn puzzle3() {
+#[tokio::test]
+async fn puzzle3() {
     let mut puzzle = [
         [5, 3, 0, 0, 7, 0, 0, 0, 0],
         [6, 0, 0, 1, 9, 5, 0, 0, 0],
@@ -149,7 +157,7 @@ fn puzzle3() {
         [3, 4, 5, 2, 8, 6, 1, 7, 9],
     ];
 
-    solve(&mut puzzle);
+    solve(&mut puzzle, None).await;
 
     assert_eq!(puzzle, solution);
 }
