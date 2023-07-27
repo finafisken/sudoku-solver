@@ -1,4 +1,5 @@
 use axum::extract::ws;
+use serde::Deserialize;
 use tokio::time::{sleep, Duration};
 
 use super::location::{get_3x3_from_coord, get_col_from_coord, get_row_from_coord};
@@ -9,6 +10,11 @@ pub type Grid = [[u8; 9]; 9];
 pub type Row = [u8; 9];
 pub type Column = [[u8; 1]; 9];
 pub type Area3x3 = [[u8; 3]; 3];
+
+#[derive(Deserialize)]
+pub struct Puzzle {
+    pub grid: Grid
+}
 
 pub async fn solve(puzzle: &mut Grid, mut maybe_ws: Option<ws::WebSocket>) -> Grid {
     // 1. find empty space from top -> bot, left -> right
