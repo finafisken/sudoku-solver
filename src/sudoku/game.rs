@@ -34,8 +34,7 @@ pub async fn solve(puzzle: &mut Grid, mut maybe_ws: Option<ws::WebSocket>) -> Gr
     // reverse order for easy pop/push working from top left
     to_fill.reverse();
 
-    while !to_fill.is_empty() {
-        let (x, y) = to_fill.pop().expect("Got empty Option from to_fill");
+    while let Some((x, y)) = to_fill.pop() {
         let val = puzzle[y][x];
         let candidate = val + 1;
 
@@ -63,7 +62,9 @@ pub async fn solve(puzzle: &mut Grid, mut maybe_ws: Option<ws::WebSocket>) -> Gr
 
         if let Some(ref mut ws) = maybe_ws {
             sleep(Duration::from_millis(10)).await;
-            ws.send(ws::Message::Text(format!("x: {x}, y: {y} => {candidate}"))).await;
+            let _ = ws
+                .send(ws::Message::Text(format!("{x}:{y}:{candidate}")))
+                .await;
         }
 
         if is_valid {
