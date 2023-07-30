@@ -1,7 +1,7 @@
 {
-  "name": "vite-template-solid",
-  "version": "0.0.0",
-  "description": "",
+  "name": "sudoku-solver-client",
+  "version": "0.0.1",
+  "description": "UI for sudoku solver, initiaties solve on server and displays each step",
   "scripts": {
     "start": "vite",
     "dev": "vite",
