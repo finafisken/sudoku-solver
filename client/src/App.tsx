@@ -1,6 +1,5 @@
-import { onMount, type Component } from 'solid-js';
+import { onMount, type Component, createSignal } from 'solid-js';
 import Grid from './Grid';
-import styles from './App.module.css';
 import { createStore, produce } from 'solid-js/store';
 
 const startState =
@@ -21,10 +20,16 @@ ws.onmessage = (d) => console.log(d);
 
 const App: Component = () => {
   const [gridState, setGridState] = createStore(startState);
+  const [readyToSolve, setReadyToSolve] = createSignal(true);
 
   const updateCell = (val: number, x: number, y: number) => {
     setGridState(produce(grid => grid[y][x] = val))
   };
+
+  const onClick = () => {
+    ws.send(JSON.stringify(gridState))
+    setReadyToSolve(false)
+  }
 
   onMount(() => {
     ws.onmessage = (msg) => {
@@ -35,9 +40,9 @@ const App: Component = () => {
   })
 
   return (
-    <div class={styles.App}>
+    <div class="">
       <Grid state={gridState} updateCell={updateCell} />
-      <button class='bg-primary rounded' onClick={() => ws.send(JSON.stringify(gridState))}> Solve it!</button>
+      <button class='btn btn-primary' disabled={!readyToSolve()} onClick={onClick}>Solve it!</button>
     </div>
   );
 };
