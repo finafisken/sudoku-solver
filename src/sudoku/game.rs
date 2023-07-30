@@ -14,6 +14,8 @@ pub type Area3x3 = [[u8; 3]; 3];
 #[derive(Deserialize)]
 pub struct Puzzle(pub Grid);
 
+const MS_DELAY: u64 = 50;
+
 pub async fn solve(puzzle: &mut Grid, mut maybe_ws: Option<ws::WebSocket>) -> Grid {
     // 1. find empty space from top -> bot, left -> right
     // 2. insert candidate number
@@ -47,6 +49,10 @@ pub async fn solve(puzzle: &mut Grid, mut maybe_ws: Option<ws::WebSocket>) -> Gr
             to_fill.push((x, y));
             to_fill.push((prev_x, prev_y));
 
+            if let Some(ref mut ws) = maybe_ws {
+                sleep(Duration::from_millis(MS_DELAY)).await;
+                let _ = ws.send(ws::Message::Text(format!("{x}:{y}:0"))).await;
+            }
             continue;
         }
 
@@ -61,7 +67,7 @@ pub async fn solve(puzzle: &mut Grid, mut maybe_ws: Option<ws::WebSocket>) -> Gr
         let is_valid = is_3x3_valid(&area) && is_col_valid(&col) && is_row_valid(&row);
 
         if let Some(ref mut ws) = maybe_ws {
-            sleep(Duration::from_millis(10)).await;
+            sleep(Duration::from_millis(MS_DELAY)).await;
             let _ = ws
                 .send(ws::Message::Text(format!("{x}:{y}:{candidate}")))
                 .await;
