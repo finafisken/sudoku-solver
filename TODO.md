@@ -1,4 +1,5 @@
-- add ui for puzzle input
-	- update ui for every tick of algo
-- ui trigger for puzzle
+- enable rerun of solution
+- make ui able to take input
+- improve ws client/server message format
+- enable history replay, calculate state with stored diffs?
 - endpoint for new game, redirect to url with new game id
