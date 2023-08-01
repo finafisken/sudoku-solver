@@ -1,4 +1,4 @@
-import { onMount, type Component, createSignal } from 'solid-js';
+import { onMount, type Component, createSignal, Switch, Match, Show } from 'solid-js';
 import Grid from './Grid';
 import { createStore, produce } from 'solid-js/store';
 
@@ -21,21 +21,27 @@ let ws: WebSocket;
 
 const App: Component = () => {
   const [gridState, setGridState] = createStore<number[][]>(startState);
-  const [readyToSolve, setReadyToSolve] = createSignal<boolean>(true);
-  const [cellHistory, setCellHistroy] = createStore<CellUpdate[]>([]);
+  // const [cellHistory, setCellHistroy] = createStore<CellUpdate[]>([]);
   const [socketReady, setSocketReady] = createSignal<boolean>(false);
+  const [running, setRunning] = createSignal<boolean>(false);
 
   const updateCell = (val: number, x: number, y: number) => {
     setGridState(produce(grid => grid[y][x] = val))
   };
 
-  const onClick = () => {
+  const sendGrid = () => {
+    setRunning(true)
     ws.send(JSON.stringify(gridState))
-    setReadyToSolve(false)
+  }
+
+  const stopSolve = () => {
+    ws.send("STOP");
+    setRunning(false)
   }
 
   onMount(() => {
     ws = new WebSocket('ws://localhost:1337/live');
+
     ws.onopen = () => {
       console.debug("WS open", ws);
       setSocketReady(true);
@@ -49,15 +55,16 @@ const App: Component = () => {
     ws.onmessage = (msg) => {
       const [x, y, val] = msg.data.split(":");
       updateCell(parseInt(val), x, y);
-      setCellHistroy(produce(history => history.push({ x, y, val })));
+      // setCellHistroy(produce(history => history.push({ x, y, val })));
     }
   })
 
   return (
     <div class="">
       <Grid state={gridState} updateCell={updateCell} />
-      <button class='btn btn-primary' disabled={!socketReady()} onClick={onClick}>Solve it!</button>
-      { /*<input type="range" min={0} max={cellHistory.length} value={cellHistory.length} class="range" /> */ }
+        <button class='btn btn-primary' onClick={sendGrid}>Solve it!</button>
+        <button class='btn btn-error'  onClick={stopSolve}>Stop!</button>
+      { /*<input type="range" min={0} max={cellHistory.length} value={cellHistory.length} class="range" /> */}
     </div>
   );
 };
