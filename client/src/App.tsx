@@ -17,13 +17,13 @@ const startState =
     [3, 5, 0, 0, 6, 7, 4, 0, 8]
   ];
 
-const ws = new WebSocket('ws://localhost:1337/live');
-ws.onmessage = (d) => console.log(d);
+let ws: WebSocket;
 
 const App: Component = () => {
-  const [gridState, setGridState] = createStore(startState);
+  const [gridState, setGridState] = createStore<number[][]>(startState);
   const [readyToSolve, setReadyToSolve] = createSignal<boolean>(true);
   const [cellHistory, setCellHistroy] = createStore<CellUpdate[]>([]);
+  const [socketReady, setSocketReady] = createSignal<boolean>(false);
 
   const updateCell = (val: number, x: number, y: number) => {
     setGridState(produce(grid => grid[y][x] = val))
@@ -35,10 +35,20 @@ const App: Component = () => {
   }
 
   onMount(() => {
+    ws = new WebSocket('ws://localhost:1337/live');
+    ws.onopen = () => {
+      console.debug("WS open", ws);
+      setSocketReady(true);
+    }
+
+    ws.onclose = () => {
+      console.debug("WS close", ws);
+      setSocketReady(false);
+    }
+
     ws.onmessage = (msg) => {
-      console.log(msg.data);
       const [x, y, val] = msg.data.split(":");
-      updateCell(val, x, y);
+      updateCell(parseInt(val), x, y);
       setCellHistroy(produce(history => history.push({ x, y, val })));
     }
   })
@@ -46,8 +56,8 @@ const App: Component = () => {
   return (
     <div class="">
       <Grid state={gridState} updateCell={updateCell} />
-      <button class='btn btn-primary' disabled={!readyToSolve()} onClick={onClick}>Solve it!</button>
-      <input type="range" min={0} max={cellHistory.length} value={cellHistory.length} class="range" />
+      <button class='btn btn-primary' disabled={!socketReady()} onClick={onClick}>Solve it!</button>
+      { /*<input type="range" min={0} max={cellHistory.length} value={cellHistory.length} class="range" /> */ }
     </div>
   );
 };

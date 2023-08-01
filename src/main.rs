@@ -6,6 +6,7 @@ use axum::{
     routing::get,
     Router, Server,
 };
+use futures_util::StreamExt;
 
 use crate::sudoku::game::Puzzle;
 
@@ -23,27 +24,24 @@ async fn live_solve(ws: WebSocketUpgrade) -> impl IntoResponse {
     ws.on_upgrade(solve_and_broadcast)
 }
 
-async fn solve_and_broadcast(mut ws: ws::WebSocket) {
-    if let Some(msg) = ws.recv().await {
-        let Ok(data) = msg else {
-            println!("Bad msg!");
-            return;
-        };
+async fn solve_and_broadcast(ws: ws::WebSocket) {
+    let (mut sender, mut receiver) = ws.split();
+    let mut _recv_task = tokio::spawn(async move {
+        while let Some(Ok(msg)) = receiver.next().await {
+            dbg!(&msg);
+            let stringified_data = match msg {
+                ws::Message::Text(t) => t,
+                _ => String::default(),
+            };
 
-        let stringified_data = match data {
-            ws::Message::Text(t) => t,
-            _ => String::default(),
-        };
+            let Ok(puzzle) = serde_json::from_str::<Puzzle>(&stringified_data) else {
+                println!("BAD JSON");
+                return;
+            };
 
-        let Ok(puzzle) = serde_json::from_str::<Puzzle>(&stringified_data) else {
-            println!("BAD JSON: {stringified_data:?}");
-            return;
-        };
+            let solution = sudoku::game::solve(&mut puzzle.into(), Some(&mut sender)).await;
 
-        let Puzzle(mut p) = puzzle;
-
-        let solution = sudoku::game::solve(&mut p, Some(ws)).await;
-
-        println!("{solution:?}");
-    }
+            println!("{solution:?}");
+        }
+    });
 }

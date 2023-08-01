@@ -1,6 +1,8 @@
-use axum::extract::ws;
+use axum::extract::ws::{self, WebSocket, Message};
+use futures_util::stream::SplitSink;
 use serde::Deserialize;
 use tokio::time::{sleep, Duration};
+use futures_util::SinkExt;
 
 use super::location::{get_3x3_from_coord, get_col_from_coord, get_row_from_coord};
 use super::validation::{is_3x3_valid, is_col_valid, is_row_valid};
@@ -12,11 +14,17 @@ pub type Column = [[u8; 1]; 9];
 pub type Area3x3 = [[u8; 3]; 3];
 
 #[derive(Deserialize)]
-pub struct Puzzle(pub Grid);
+pub struct Puzzle(Grid);
 
-const MS_DELAY: u64 = 50;
+impl From<Puzzle> for Grid {
+    fn from(Puzzle(value): Puzzle) -> Self {
+        value
+    }
+}
 
-pub async fn solve(puzzle: &mut Grid, mut maybe_ws: Option<ws::WebSocket>) -> Grid {
+const MS_DELAY: u64 = 5;
+
+pub async fn solve(puzzle: &mut Grid, mut maybe_ws: Option<&mut SplitSink<WebSocket, Message>>) -> Grid {
     // 1. find empty space from top -> bot, left -> right
     // 2. insert candidate number
     // 3. validate puzzle, if ok go step one, if bad backtrack step two and increment candidate
