@@ -1,8 +1,6 @@
-use axum::extract::ws::{self, WebSocket, Message};
-use futures_util::stream::SplitSink;
 use serde::Deserialize;
+use tokio::sync::mpsc;
 use tokio::time::{sleep, Duration};
-use futures_util::SinkExt;
 
 use super::location::{get_3x3_from_coord, get_col_from_coord, get_row_from_coord};
 use super::validation::{is_3x3_valid, is_col_valid, is_row_valid};
@@ -24,7 +22,7 @@ impl From<Puzzle> for Grid {
 
 const MS_DELAY: u64 = 5;
 
-pub async fn solve(puzzle: &mut Grid, mut maybe_ws: Option<&mut SplitSink<WebSocket, Message>>) -> Grid {
+pub async fn solve(puzzle: &mut Grid, maybe_sender: Option<mpsc::Sender<String>>) -> Grid {
     // 1. find empty space from top -> bot, left -> right
     // 2. insert candidate number
     // 3. validate puzzle, if ok go step one, if bad backtrack step two and increment candidate
@@ -57,9 +55,9 @@ pub async fn solve(puzzle: &mut Grid, mut maybe_ws: Option<&mut SplitSink<WebSoc
             to_fill.push((x, y));
             to_fill.push((prev_x, prev_y));
 
-            if let Some(ref mut ws) = maybe_ws {
+            if let Some(ref sender) = maybe_sender {
                 sleep(Duration::from_millis(MS_DELAY)).await;
-                let _ = ws.send(ws::Message::Text(format!("{x}:{y}:0"))).await;
+                sender.send(format!("{x}:{y}:0")).await;
             }
             continue;
         }
@@ -74,11 +72,9 @@ pub async fn solve(puzzle: &mut Grid, mut maybe_ws: Option<&mut SplitSink<WebSoc
 
         let is_valid = is_3x3_valid(&area) && is_col_valid(&col) && is_row_valid(&row);
 
-        if let Some(ref mut ws) = maybe_ws {
+        if let Some(ref sender) = maybe_sender {
             sleep(Duration::from_millis(MS_DELAY)).await;
-            let _ = ws
-                .send(ws::Message::Text(format!("{x}:{y}:{candidate}")))
-                .await;
+            sender.send(format!("{x}:{y}:{candidate}")).await;
         }
 
         if is_valid {

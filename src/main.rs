@@ -6,7 +6,8 @@ use axum::{
     routing::get,
     Router, Server,
 };
-use futures_util::StreamExt;
+use futures_util::{StreamExt, SinkExt};
+use tokio::{sync::mpsc, task::JoinHandle};
 
 use crate::sudoku::game::Puzzle;
 
@@ -25,23 +26,48 @@ async fn live_solve(ws: WebSocketUpgrade) -> impl IntoResponse {
 }
 
 async fn solve_and_broadcast(ws: ws::WebSocket) {
-    let (mut sender, mut receiver) = ws.split();
-    let mut _recv_task = tokio::spawn(async move {
-        while let Some(Ok(msg)) = receiver.next().await {
-            dbg!(&msg);
-            let stringified_data = match msg {
-                ws::Message::Text(t) => t,
-                _ => String::default(),
-            };
+    let (mut ws_sender, mut ws_receiver) = ws.split();
 
-            let Ok(puzzle) = serde_json::from_str::<Puzzle>(&stringified_data) else {
-                println!("BAD JSON");
-                return;
-            };
+    let mut current_task: Option<JoinHandle<()>> = None;
 
-            let solution = sudoku::game::solve(&mut puzzle.into(), Some(&mut sender)).await;
+    while let Some(Ok(msg)) = ws_receiver.next().await {
+        dbg!(&msg);
+        let stringified_data = match msg {
+            ws::Message::Text(t) => t,
+            ws::Message::Close(_) => {
+                println!("Closed socket");
+                continue;
+            }
+            _ => String::default(),
+        };
 
-            println!("{solution:?}");
+        if &stringified_data == "STOP" {
+            match current_task {
+                Some(ref task) => {
+                    task.abort();
+                    continue
+                },
+                None => continue,
+            }
         }
-    });
+
+        let (tx, mut rx) = mpsc::channel::<String>(64);
+
+        let Ok(puzzle) = serde_json::from_str::<Puzzle>(&stringified_data) else {
+            println!("BAD JSON");
+            continue;
+        };
+
+        let solve_task = tokio::spawn(async move {
+            // let solution = sudoku::game::solve(&mut puzzle.into(), Some(&mut sender)).await;
+            let solution = sudoku::game::solve(&mut puzzle.into(), Some(tx)).await;
+            println!("{solution:?}");
+        });
+
+        current_task = Some(solve_task);
+
+        while let Some(message) = rx.recv().await {
+            ws_sender.send(ws::Message::Text(message)).await;
+        }
+    }
 }
