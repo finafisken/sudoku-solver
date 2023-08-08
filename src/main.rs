@@ -27,8 +27,16 @@ async fn live_solve(ws: WebSocketUpgrade) -> impl IntoResponse {
 
 async fn solve_and_broadcast(ws: ws::WebSocket) {
     let (mut ws_sender, mut ws_receiver) = ws.split();
+    let (tx, mut rx) = mpsc::channel::<String>(64);
 
     let mut current_task: Option<JoinHandle<()>> = None;
+
+    tokio::spawn(async move {
+        while let Some(message) = rx.recv().await {
+            ws_sender.send(ws::Message::Text(message)).await;
+        }
+    });
+    
 
     while let Some(Ok(msg)) = ws_receiver.next().await {
         dbg!(&msg);
@@ -51,23 +59,18 @@ async fn solve_and_broadcast(ws: ws::WebSocket) {
             }
         }
 
-        let (tx, mut rx) = mpsc::channel::<String>(64);
-
         let Ok(puzzle) = serde_json::from_str::<Puzzle>(&stringified_data) else {
             println!("BAD JSON");
             continue;
         };
 
+        let transmitter = tx.clone();
+
         let solve_task = tokio::spawn(async move {
-            // let solution = sudoku::game::solve(&mut puzzle.into(), Some(&mut sender)).await;
-            let solution = sudoku::game::solve(&mut puzzle.into(), Some(tx)).await;
+            let solution = sudoku::game::solve(&mut puzzle.into(), Some(transmitter)).await;
             println!("{solution:?}");
         });
 
         current_task = Some(solve_task);
-
-        while let Some(message) = rx.recv().await {
-            ws_sender.send(ws::Message::Text(message)).await;
-        }
     }
 }
